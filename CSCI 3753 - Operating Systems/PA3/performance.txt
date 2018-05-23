@@ -1,0 +1,47 @@
+Number for requester thread = 1
+Number for requester thread = 1
+Thread 0 serviced 5 files
+Total run time: 85.962946
+
+Number for requester thread = 1
+Number for requester thread = 3
+Thread 0 serviced 5 files
+Total run time: 84.915002
+
+Number for requester thread = 3
+Number for requester thread = 1
+Thread 0 serviced 2 files
+Thread 1 serviced 2 files
+Thread 2 serviced 1 files
+Total run time: 74.957860
+
+Number for requester thread = 3
+Number for requester thread = 3
+Thread 0 serviced 2 files
+Thread 1 serviced 2 files
+Thread 2 serviced 1 files
+Total run time: 76.175863
+
+Number for requester thread = 5
+Number for requester thread = 5
+Thread 0 serviced 1 files
+Thread 1 serviced 1 files
+Thread 2 serviced 1 files
+Thread 3 serviced 1 files
+Thread 4 serviced 1 files
+Total run time: 84.894912
+
+Number for requester thread = 8
+Number for requester thread = 5
+Thread 0 serviced 1 files
+Thread 1 serviced 1 files
+Thread 2 serviced 0 files
+Thread 3 serviced 1 files
+Thread 4 serviced 1 files
+Thread 5 serviced 1 files
+Thread 6 serviced 1 files
+Thread 7 serviced 1 files
+Total run time: 79.822449
+
+Form observing the results above, I can say that the number of requester threads is more important than the number of resolver threads. The case of 3 requester threads and 1 resolver threads has almost the same running time as the case of 3 requestor threads and 3 resolver threads. The same thing from (1-1 threads and 1-3 threads).
+Comparing the results to the generated graph, I can say that it has almost the same results. We will have the fastest running time when there are about 3-5 requestor threads and 3-5 resolver threads. If we have more requestor threads, there will be no big difference, but if we have more or fewer resolver threads the running time will be much slower.

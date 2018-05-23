@@ -1,0 +1,159 @@
+Mohamed Al-Rasbi
+moal7202
+
+COMMANDS:
+
+All Machines:
+[1]
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -i lo -j ACCEPT
+
+[2]
+iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type time-exceeded -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type destination-unreachable -j ACCEPT
+
+[3]
+iptables -A INPUT -p tcp --dport 22 -s 100.64.0.0/16 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -s 100.64.2.0/24 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -s 100.64.254.0/24 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -s 10.21.32.0/24 -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -s 198.18.0.0/16 -j ACCEPT
+
+[4]
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+
+==================================
+
+Machine A/Router:
+[1]
+Used ip address: 157.240.2.35 for facebook
+iptables -A FORWARD -d 157.240.2.35 -j DROP
+iptables -A FORWARD -s 157.240.2.35 -j DROP
+
+[2]
+I got the same ip address for both icanhas.cheezburger.com and cheezburger.com by running nslookup and ping.
+iptables -A FORWARD -d 216.176.177.74 -j DROP
+iptables -A FORWARD -s 216.176.177.74 -j DROP
+
+[3]
+For all machines:
+iptables -A FORWARD -p icmp --icmp-type echo-request -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p icmp --icmp-type echo-reply -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p icmp --icmp-type time-exceeded -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p icmp --icmp-type destination-unreachable -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 22 -s 100.64.0.0/16 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 22 -s 100.64.2.0/24 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 22 -s 100.64.254.0/24 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 22 -s 10.21.32.0/24 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 22 -s 198.18.0.0/16 -m conntrack --ctstate NEW -j ACCEPT
+
+For Machines B and F:
+iptables -A FORWARD -p tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 443 -m conntrack --ctstate NEW -j ACCEPT
+
+For Machine C:
+iptables -A FORWARD -s 100.64.0.0/16 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 21 -s 100.64.0.0/16 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 21 -s 100.64.0.27 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 21 -s 172.20.74.4 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 21 -s 100.64.2.3 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 22 -s 100.64.2.3 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 80 -s 100.64.2.3 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 443 -s 100.64.2.3 -m conntrack --ctstate NEW -j ACCEPT
+
+For Machine D:
+iptables -A FORWARD -p tcp --dport 53 -d 100.64.2.4 -m conntrack --ctstate NEW -j ACCEPT
+
+For Machine E:
+iptables -A FORWARD -p tcp --dport 135 -d 10.21.32.2 -s 10.21.32.0/24 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p udp --dport 137 -d 10.21.32.2 -s 10.21.32.0/24 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p udp --dport 138 -d 10.21.32.2 -s 10.21.32.0/24 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p udp --dport 139 -d 10.21.32.2 -s 10.21.32.0/24 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A FORWARD -p tcp --dport 445 -d 10.21.32.2 -s 10.21.32.0/24 -m conntrack --ctstate NEW -j ACCEPT
+
+
+Drop all other inbound forwarded traffic:
+iptables -A FORWARD -i ens192 -m conntrack --ctstate NEW -j DROP
+
+
+[4]
+iptables -P INPUT DROP
+iptables -P OUTPUT ACCEPT
+iptables -P FORWARD ACCEPT
+
+==================================
+
+Machines B and F:
+[1]
+iptables -I INPUT -p tcp --dport 80 -m conntrack --ctstate NEW -j ACCEPT
+iptables -I INPUT -p tcp --dport 443 -m conntrack --ctstate NEW -j ACCEPT
+
+
+==================================
+
+Machine C:
+[1]
+iptables -I INPUT -s 100.64.0.0/16 -j ACCEPT
+
+[2]
+iptables -A INPUT -p tcp --dport 21 -s 100.64.0.0/16 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A INPUT -p tcp --dport 21 -s 100.64.0.27 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A INPUT -p tcp --dport 21 -s 172.20.74.4 -m conntrack --ctstate NEW -j ACCEPT
+
+[3]
+iptables -A OUTPUT -p tcp --sport 53 -d 100.64.2.4 -j ACCEPT
+
+[4]
+iptables -A OUTPUT -p tcp --sport 21 -j ACCEPT
+iptables -A OUTPUT -p tcp --sport 80 -j ACCEPT
+iptables -A OUTPUT -p tcp --sport 443 -j ACCEPT
+iptables -A OUTPUT -p tcp --sport 22 -j ACCEPT
+
+[5]
+iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type time-exceeded -j ACCEPT
+iptables -A OUTPUT -p icmp --icmp-type destination-unreachable -j ACCEPT
+
+[6]
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+
+==================================
+
+Machine D:
+[1]
+iptables -I INPUT -p tcp --dport 53 -m conntrack --ctstate NEW -j ACCEPT
+
+==================================
+
+Machine E:
+[1]
+iptables -A INPUT -p tcp --dport 135 -s 10.21.32.0/24 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A INPUT -p udp --dport 137 -s 10.21.32.0/24 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A INPUT -p udp --dport 138 -s 10.21.32.0/24 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A INPUT -p udp --dport 139 -s 10.21.32.0/24 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A INPUT -p tcp --dport 445 -s 10.21.32.0/24 -m conntrack --ctstate NEW -j ACCEPT
+
+[2]
+iptables -A INPUT -p tcp --dport 22 -s 10.21.32.1 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -s 10.21.32.0/24 -m conntrack --ctstate NEW -j ACCEPT
+The second rule is actually enough so that Machine E can connect to Machine A, which ip address is 10.21.32.1
+
+
+
+
+
+
+
+
+
+
+
+
+
+

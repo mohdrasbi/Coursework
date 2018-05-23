@@ -1,0 +1,96 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1561\cocoasubrtf400
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Monaco;}
+{\colortbl;\red255\green255\blue255;\red242\green242\blue242;}
+{\*\expandedcolortbl;;\csgenericrgb\c94902\c94902\c94902;}
+\margl1440\margr1440\vieww16320\viewh8180\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 LabCommands:\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 lvmdiskscan : list disks and some other info (if a disk is physical volume or not)\
+pvcreate /dev/sdb : create physical volume on the disk /dev/sdb\
+vgcreate vg_new /dev/sdb : create volume group from the disk /dev/sdb\
+pvs : list physical volumes and other information\
+vgs : list volume groups and other information\
+lvcreate -L 4G -n lv_home vg_new : create logical volume lv_home of size 4G on the volume group vg_new \
+lvcreate -L 1G -n lv_tmp vg_new : create logical volume lv_tmp of size 1G on the volume group vg_new \
+mkfs.xfs /dev/vg_new/lv_tmp : format lv_tmp logical volume with xfs filesystem\
+mkfs.xfs /dev/vg_new/lv_home : format lv_home logical volume with xfs filesystem\
+sudo mkdir /mnt/lv_home : create mount point for lv_home\
+sudo mkdir /mnt/lv_tmp : create mount point for lv_tmp\
+mount /dev/vg_new/lv_home /mnt/lv_home : mount lv_home to temporary mount point\
+mount /dev/vg_new/lv_tmp /mnt/lv_tmp : mount lv_tmp to temporary mount point\
+sudo cp -r /home/* /mnt/lv_home/ : copy files to logical volume\
+sudo cp -r /tmp/* /mnt/lv_tmp/: copy files to logical volume\
+\
+=============================\
+\
+I changed /etc/fstab so that after reboot the logical volumes will be mounted. This is the content of /etc/fstab\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f1\fs20 \cf2 \cb0 \CocoaLigature0 #\
+# /etc/fstab\
+# Created by anaconda on Sun Mar 22 18:53:23 2015\
+#\
+# Accessible filesystems, by reference, are maintained under '/dev/disk'\
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info\
+#\
+/dev/mapper/centos-root /                       xfs     defaults        1 1\
+UUID=71438877-2509-4eb2-9c1d-dd119fb7b77f /boot                   xfs     defaults        1 2\
+/dev/mapper/centos-swap swap                    swap    defaults        0 0\
+/dev/vg_new/lv_home	/mnt/lv_home			 xfs	    nodev            0 0\
+/dev/vg_new/lv_tmp		/mnt/lv_tmp			 xfs	    nodev,nosuid,noexec                0 0\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \cb1 \CocoaLigature1 \
+=============================\
+\
+I rebooted the machine to check if the logical volumes will be mounted where they belong after the reboot.\
+I ran the command df -h to check that, and this is the output:\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f1\fs20 \cf2 \cb0 \CocoaLigature0 Filesystem                  Size  Used Avail Use% Mounted on\
+/dev/mapper/centos-root     5.0G  5.0G  8.2M 100% /\
+devtmpfs                    234M     0  234M   0% /dev\
+tmpfs                       245M     0  245M   0% /dev/shm\
+tmpfs                       245M  4.5M  240M   2% /run\
+tmpfs                       245M     0  245M   0% /sys/fs/cgroup\
+/dev/sda1                   497M   96M  401M  20% /boot\
+/dev/mapper/vg_new-lv_tmp  1014M   33M  982M   4% /mnt/lv_tmp\
+/dev/mapper/vg_new-lv_home  4.0G  1.8G  2.3G  44% /mnt/lv_home\
+tmpfs                        49M     0   49M   0% /run/user/0\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \cb1 \CocoaLigature1 \
+=============================\
+\
+Everything looks great now. The only thing that I need to do if free up the unused storage in /dev/centos/root. \
+The unused storage are the directories /home and /tmp. So I ran the command sudo rm -r * inside these two directories.\
+I rebooted the machine, and it looks good.\
+\
+=============================\
+\
+df -h after everything:\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f1\fs20 \cf2 \cb0 \CocoaLigature0 [root@machinee ~]# df -h\
+Filesystem                  Size  Used Avail Use% Mounted on\
+/dev/mapper/centos-root     5.0G  3.3G  1.8G  66% /\
+devtmpfs                    234M     0  234M   0% /dev\
+tmpfs                       245M     0  245M   0% /dev/shm\
+tmpfs                       245M  4.5M  240M   2% /run\
+tmpfs                       245M     0  245M   0% /sys/fs/cgroup\
+/dev/sda1                   497M   96M  401M  20% /boot\
+/dev/mapper/vg_new-lv_tmp  1014M   33M  982M   4% /mnt/lv_tmp\
+/dev/mapper/vg_new-lv_home  4.0G  1.8G  2.3G  44% /mnt/lv_home\
+tmpfs                        49M     0   49M   0% /run/user/0\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \cb1 \CocoaLigature1 \
+\
+\
+\
+}

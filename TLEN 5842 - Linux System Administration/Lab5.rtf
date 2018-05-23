@@ -1,0 +1,130 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Monaco;}
+{\colortbl;\red255\green255\blue255;\red64\green11\blue217;\red242\green242\blue242;\red180\green36\blue25;
+\red200\green20\blue201;\red47\green180\blue29;\red193\green101\blue28;}
+\margl1440\margr1440\vieww14180\viewh9360\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 Mohamed Al-Rasbi\
+\
+Requirement 2:\
+This is the file /etc/dhcp/dhcpd.conf\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f1\fs20 \cf2 \cb0 \CocoaLigature0 #\cf3 \
+\cf2 # DHCP Server Configuration file.\cf3 \
+\cf2 #   see /usr/share/doc/dhcp*/dhcpd.conf.example\cf3 \
+\cf2 #   see dhcpd.conf(5) man page\cf3 \
+\cf2 #\cf3 \
+subnet 100.64.2.0 netmask 255.255.255.0 \{\
+        host carriage \{\
+                option host-name \cf4 "carriage.dundermifflin.com"\cf3 ;\
+                hardware ethernet 00:50:56:b4:34:17;\
+                fixed-address 100.64.2.2;\
+        \}\
+\
+        host platen \{\
+                option host-name \cf4 "platen.dundermifflin.com"\cf3 ;\
+                hardware ethernet 00:50:56:b4:f0:5d;\
+                fixed-address 100.64.2.3;\
+        \}\
+\
+        host chase \{\
+                option host-name \cf4 "chase.dundermifflin.com"\cf3 ;\
+                hardware ethernet 00:50:56:b4:1a:de;\
+                fixed-address 100.64.2.4;\
+        \}\
+\
+        host saddle \{\
+                option host-name \cf4 "saddle.dundermifflin.com"\cf3 ;\
+                hardware ethernet 00:50:56:b4:26:1b;\
+                fixed-address 100.64.2.5;\
+        \}\
+\}\
+\
+subnet 10.21.32.0 netmask 255.255.255.0 \{\
+        host roller \{\
+                option host-name \cf4 "roller.dundermifflin.com"\cf3 ;\
+                hardware ethernet 00:50:56:b4:d3:9c;\
+                fixed-address 10.21.32.2;\
+        \}\
+\}
+\f0\fs24 \cf0 \cb1 \CocoaLigature1 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+==============================\
+\
+Requirement 3:\
+Changed the parameter BOOTPROTO in ifcfg-ens192 to dhcp in all machines.\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 ==============================\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+Requirement 4:\
+When Machine F got connected to the network, all local servers and vpn have been able to connect to it via ssh.\
+I ran these commands to open port 80 in machine F:\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f1\fs20 \cf3 \cb0 \CocoaLigature0 firewall-cmd --zone=public --add-port=80/tcp --permanent\
+firewall-cmd --reload\
+
+\f0\fs24 \cf0 \cb1 \CocoaLigature1 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 ==============================\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf0 \
+Requirement 5:\
+I ran the commands from lab3 and lab4 on Machine F so it can have the same user/group/permissions.\
+And this is what I did to sync between machine F and B.\
+in /etc/crontab:\
+
+\f1\fs20 \cf4 \cb0 \CocoaLigature0 0\cf5  *\cf6  *\cf4  *\cf5  *\cf3  \cf7 root /root/backup.sh\
+
+\f0\fs24 \cf0 \cb1 \CocoaLigature1 in /root/backup.sh:\
+
+\f1\fs20 \cf3 \cb0 \CocoaLigature0 #!/bin/bash\
+\
+sshpass -p webserverpassword rsync -av root@100.64.2.2:/var/www /var/.\
+
+\f0\fs24 \cf0 \cb1 \CocoaLigature1 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 ==============================\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf0 \
+Requirement 6:\
+I changed the values of listen-on and allow-query to any so the dos server can resolve requests for names external to D-M. And the required zones so it acts as an authoritative server for the dundermifflin.com. domain.\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 ==============================\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf0 \
+Requirement 7:\
+dundermiffilin.com and 100.64.2 files in /var/named/ have all the names from the table.\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 ==============================\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf0 \
+Requirement 8:\
+I used the command 
+\f1\fs20 \cf3 \cb0 \CocoaLigature0 hostnamectl set-hostname <new name>
+\f0\fs24 \cf0 \cb1 \CocoaLigature1  to set the new host names. I do not know if the host names are supposed to change automatically from dhcp, dns servers. However, I assumed that we should do that manually since it was not clear in the requirement.\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 ==============================\
+\
+Requirement 9:\
+Added these two lines in /etc/dhcp/dhcpd.conf to set the domain name and the address of the dns servers:\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f1\fs20 \cf3 \cb0 \CocoaLigature0 option domain-name-servers 100.64.2.4;\
+option domain-name \cf4 "dundermifflin.com"\cf3 ;\
+
+\f0\fs24 \cf0 \cb1 \CocoaLigature1 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 ==============================\
+\
+Requirement 10:\
+Checked.\
+}
