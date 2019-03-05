@@ -16,11 +16,31 @@ case object PopI extends StackMachineInstruction
 
 object StackMachineEmulator {
 
-    def computeResultsBinary(stack: List[Double], f: (Double, Double) => Double): List[Double] = {
-      //Need to check if length of stack is less than 2, throw error
-      val res = f(stack(1), stack(0))
-      res::stack.silce(2, stack.length)
+    def computeResultsBinary(stack: List[Double], f: (Double, Double) => Double, isDiv: Boolean): List[Double] = {
+      if(stack.length < 2) {
+        throw new IllegalArgumentException("Stack length is less than 2")
+      }
+      else {
+        if(isDiv && stack(1) == 0)
+          throw new IllegalArgumentException("Cannot divide by zero")
+        else {
+          val res = f(stack(1), stack(0))
+          res :: stack.slice(2, stack.length)
+        }
+      }
+    }
 
+    def computResultUnary(stack: List[Double], f: (Double) => Double, isLog: Boolean): List[Double] = {
+      if(stack.isEmpty)
+        throw new IllegalArgumentException("Stack is empty")
+      else {
+        if(isLog && stack(0) < 0)
+          throw new IllegalArgumentException("Cannot take log of a negative number")
+        else {
+          val res = f(stack(0))
+          res :: stack.slice(1, stack.length)
+        }
+      }
     }
 
     /* Function emulateSingleInstruction
@@ -32,18 +52,41 @@ object StackMachineEmulator {
 
      */
     def emulateSingleInstruction(stack: List[Double], ins: StackMachineInstruction): List[Double] = {
-      ins match {
-        case AddI => {
-          val res = stack(0) + stack(1)
-          res :: stack.slice(2, stack.length)
-
+        ins match {
+          case PushI(f) => {
+            f :: stack
+          }
+          case PopI => {
+            if (stack.isEmpty)
+              throw new IllegalArgumentException("Stack is empty")
+            else
+              stack.slice(1, stack.length)
+          }
+          case AddI => {
+            computeResultsBinary(stack, (x, y) => x + y, false)
+          }
+          case SubI => {
+            computeResultsBinary(stack, (x, y) => x - y, false)
+          }
+          case MultI => {
+            computeResultsBinary(stack, (x, y) => x * y, false)
+          }
+          case DivI => {
+            computeResultsBinary(stack, (x, y) => x / y, true)
+          }
+          case LogI => {
+            computResultUnary(stack, x => math.log(x), true)
+          }
+          case ExpI => {
+            computResultUnary(stack, x => math.exp(x), false)
+          }
+          case SinI => {
+            computResultUnary(stack, x => math.sin(x), false)
+          }
+          case CosI => {
+            computResultUnary(stack, x => math.cos(x), false)
+          }
         }
-        case SubI => {
-          val res = stack(1) - stack(0)
-          res :: stack.slive(2, stack.length)
-        }
-
-      }
     }
 
     /* Function emulateStackMachine
@@ -53,9 +96,9 @@ object StackMachineEmulator {
        Return value must be a double that is the top of the stack after all instructions
        are executed.
      */
-    def emulateStackMachine(instructionList: List[StackMachineInstruction]): Double =
+    def emulateStackMachine(instructionList: List[StackMachineInstruction]): Double = {
       val stack = instructionList.foldLeft(List[Double]())(emulateSingleInstruction)
 
       stack(0)
-
+    }
 }

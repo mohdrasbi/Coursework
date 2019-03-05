@@ -1,4 +1,0 @@
-1. AST
-2. Lettuce
-3. Op. semantics
-4. Pattern matching
