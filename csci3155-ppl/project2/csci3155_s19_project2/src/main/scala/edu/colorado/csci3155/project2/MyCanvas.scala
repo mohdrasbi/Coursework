@@ -8,7 +8,7 @@ import java.awt.{Graphics2D}
 sealed trait Figure {
     def getBoundingBox: (Double, Double, Double, Double)
     def translate(shiftX: Double, shiftY: Double): Figure
-
+    def rotate(angRad: Double): Figure
     def render(g: Graphics2D, scaleX: Double, scaleY: Double, shiftX: Double, shiftY: Double): Unit
 }
 
@@ -19,10 +19,27 @@ sealed trait Figure {
 
 case class Polygon(val cList: List[(Double, Double)]) extends Figure {
     //TODO: Define the bounding box of the polygon
-    override def getBoundingBox: (Double, Double, Double, Double ) = ???
+    override def getBoundingBox: (Double, Double, Double, Double ) = {
+        val x_vals = cList.map(x => x._1)
+        val y_vals = cList.map(x => x._2)
+        println((x_vals.min, x_vals.max, y_vals.min, y_vals.max))
+        (x_vals.min, x_vals.max, y_vals.min, y_vals.max)
+    }
+
     //TODO: Create a new polygon by shifting each vertex in cList by (x,y)
     //    Do not change the order in which the vertices appear
-    override def translate(shiftX: Double, shiftY: Double): Polygon = ???
+    override def translate(shiftX: Double, shiftY: Double): Polygon = {
+        Polygon(cList.map(x => (x._1 + shiftX, x._2 + shiftY)))
+    }
+
+    override def rotate(angRad: Double): Polygon = {
+        val new_cList = cList.map(p => {
+            val x = (p._1 * math.cos(angRad)) - (p._2 * math.sin(angRad))
+            val y = (p._1 * math.sin(angRad)) + (p._2 * math.cos(angRad))
+            (x, y)
+        })
+        Polygon(new_cList)
+    }
 
     // Function: render -- draw the polygon. Do not edit this function.
     override def render(g: Graphics2D, scaleX: Double, scaleY: Double, shiftX: Double, shiftY: Double) = {
@@ -42,11 +59,27 @@ case class Polygon(val cList: List[(Double, Double)]) extends Figure {
  */
 case class MyCircle(val c: (Double, Double), val r: Double) extends Figure {
     //TODO: Define the bounding box for the circle
-    override def getBoundingBox: (Double, Double, Double, Double) = ???
+    override def getBoundingBox: (Double, Double, Double, Double) = {
+        val x_min = c._1 - r
+        val x_max = c._1 + r
+        val y_min = c._2 - r
+        val y_max = c._2 + r
+
+        (x_min, x_max, y_min, y_max)
+    }
 
 
     //TODO: Create a new circle by shifting the center
-    override def translate(shiftX: Double, shiftY: Double): MyCircle = ???
+    override def translate(shiftX: Double, shiftY: Double): MyCircle = {
+        MyCircle((c._1 + shiftX, c._2 + shiftY), r)
+    }
+
+    override def rotate(angRad: Double): MyCircle = {
+        val x = (c._1 * math.cos(angRad)) - (c._2 * math.sin(angRad))
+        val y = (c._1 * math.sin(angRad)) + (c._2 * math.cos(angRad))
+
+        MyCircle((x, y), r)
+    }
 
     // Function: render -- draw the polygon. Do not edit this function.
     override def render(g: Graphics2D, scaleX: Double, scaleY: Double, shiftX: Double, shiftY: Double) = {
@@ -66,27 +99,61 @@ case class MyCircle(val c: (Double, Double), val r: Double) extends Figure {
 class MyCanvas (val listOfObjects: List[Figure]) {
     // TODO: Write a function to get the boundingbox for the entire canvas.
     // Hint: use existing boundingbox functions defined in each figure.
-    def getBoundingBox: (Double, Double, Double, Double) = ???
+    def getBoundingBox: (Double, Double, Double, Double) = {
+        val bounding_boxes = listOfObjects.map(x => x.getBoundingBox)
+        val x_mins = bounding_boxes.map(x => x._1)
+        val x_maxs = bounding_boxes.map(x => x._2)
+        val y_mins = bounding_boxes.map(x => x._3)
+        val y_maxs = bounding_boxes.map(x => x._4)
+
+        (x_mins.min, x_maxs.max, y_mins.min, y_maxs.max)
+    }
 
     //TODO: Write a function to translate each figure in the canvas by shiftX, shiftY
-    def translate(shiftX: Double, shiftY: Double): MyCanvas = ???
+    def translate(shiftX: Double, shiftY: Double): MyCanvas = {
+        val newListOfObjects = listOfObjects.map(x => x.translate(shiftX, shiftY))
+        new MyCanvas(newListOfObjects)
+
+    }
 
     //TODO: Write a function that will return a new MyCanvas object that places
     // all the objects in myc2 to the right of the objects in this MyCanvas.
     // refer to the notebook documentation on how to perform this.
-    def placeRight(myc2: MyCanvas):MyCanvas = ???
+    def placeRight(myc2: MyCanvas): MyCanvas = {
+        val boundingBox1 = this.getBoundingBox
+        val boundingBox2 = myc2.getBoundingBox
+        val xShift = boundingBox1._2 - boundingBox1._1
+        val yShift = ((boundingBox1._4 - boundingBox1._3) / 2) - ((boundingBox2._4 - boundingBox2._3) / 2)
+
+        val myc2_new = myc2.translate(xShift, yShift)
+
+        this.overlap(myc2_new)
+    }
 
     //TODO: Write a function that will return a new MyCanvas object that places
     // all the figures in myc2 on top of the figures in this MyCanvas.
     // refer to the notebook documentation on how to perform this.
-    def placeTop(myc2: MyCanvas): MyCanvas = ???
+    def placeTop(myc2: MyCanvas): MyCanvas = {
+        val boundingBox1 = this.getBoundingBox
+        val boundingBox2 = myc2.getBoundingBox
+        val xShift = ((boundingBox1._2 - boundingBox1._1) / 2) - ((boundingBox2._2 - boundingBox2._1) / 2)
+        val yShift = boundingBox1._4 - boundingBox1._3
+
+        val myc2_new = myc2.translate(xShift, yShift)
+
+        this.overlap(myc2_new)
+    }
 
     //TODO: Write a function that will rotate each figure in the canvas using
     // the angle `ang` defined in radians.
     // Suggestion: first write rotation functions for polygon and circle.
     // rotating a polygon is simply rotating each vertex.
     // rotating a circle is simply rotating the center with radius unchanged.
-    def rotate(angRad: Double): MyCanvas = ???
+    def rotate(angRad: Double): MyCanvas = {
+        val newListOfObjects = listOfObjects.map(x => x.rotate(angRad))
+
+        new MyCanvas(newListOfObjects)
+    }
 
     // Function to draw the canvas. Do not edit.
     def render(g: Graphics2D, xMax: Double, yMax: Double) = {

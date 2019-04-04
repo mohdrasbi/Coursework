@@ -17,6 +17,24 @@ object ValueOps {
         case _ => throw new IllegalArgumentException("Cannot subtract figures, numbers and closures")
     }
 
+    def plus(v1: Value, v2: Value): Value = (v1, v2) match {
+        case (NumValue(f1), NumValue(f2)) => NumValue(f1 + f2)
+        case (FigValue(c1), FigValue(c2)) => FigValue(c1.overlap(c2))
+        case _ => throw new IllegalArgumentException("Cannot add figures, numbers and closures")
+    }
+
+    def mult(v1: Value, v2: Value): Value = (v1, v2) match {
+        case (NumValue(f1), NumValue(f2)) => NumValue(f1 * f2)
+        case (FigValue(c1), FigValue(c2)) => FigValue(c1.placeRight(c2))
+        case _ => throw new IllegalArgumentException("Cannot multiply figures, numbers and closures")
+    }
+
+    def div(v1: Value, v2: Value): Value = (v1, v2) match {
+        case (NumValue(f1), NumValue(f2)) if(f2 != 0) => NumValue(f1 / f2)
+        case (FigValue(c1), FigValue(c2)) => FigValue(c2.placeTop(c1))
+        case (FigValue(c1), NumValue(f1)) => FigValue(c1.rotate(f1))
+        case _ => throw new IllegalArgumentException("Cannot divide figures, numbers and closures")
+    }
 
 
     def geq(v1: Value, v2: Value): Value = (v1, v2) match {
